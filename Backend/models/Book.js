@@ -11,7 +11,11 @@ const bookSchema = new Schema({
   },
   description: {
     type: String,
+  },
+  cloudinary_id: {
+    type: String,
   }
+
 },
   { collection: "Book" }
 );

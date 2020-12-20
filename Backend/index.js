@@ -52,6 +52,7 @@ app.use(cookieParser());
 //set static dir
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/Books', require('./routes/book'))
 
 
 //GET /Books (getallBooks)
@@ -68,7 +69,8 @@ app
       res.json({ Books: Books })
     })
   })
-  //POST /Books (addBook)
+
+  /*//POST /Books (addBook)
   .post('/Books/new', function (req, res, next) {
     const {
       imagePath,
@@ -90,8 +92,8 @@ app
         res.json({ Book: book })
       }
     });
-  })
-  //POST /Books (delete)
+  })*/
+  /*//POST /Books (delete)
   .post('/Books/delete', function (req, res, next) {
     var {
       id
@@ -101,7 +103,7 @@ app
         res.send(err);
       res.json("");
     });
-  })
+  })*/
   .post('/Request/delete', function (req, res, next) {
     var {
       id
@@ -224,14 +226,28 @@ app
     } = req.body;
     User.login(email, password, function (err, p) {
       if (err) return next(err)
-      // if (p.length > 0) {
-      return res.send(p)
-
-      /*}
-      else {
-        let error = new TypedError('search', 404, 'not_found', { message: "no user exist" })
-        return res.json(error)
-      }*/
+      if (p.type == "1") {
+        Book.getAllBooks(function (e, Books) {
+          if (e) {
+            e.status = 406; return next(e);
+          }
+          if (Books.length < 1) {
+            return res.status(404).json({ message: "Books not found" })
+          }
+          res.json({ Books: Books, User: p })
+        })
+      }
+      else if (p.type == "0") {
+        Request.getAllRequests(function (e, Books) {
+          if (e) {
+            e.status = 406; return next(e);
+          }
+          if (Books.length < 1) {
+            return res.status(404).json({ message: "Books not found" })
+          }
+          res.json({ Requests: Books, User: p })
+        })
+      }
     })
   })
   .post('/signup', function (req, res, next) {
@@ -249,13 +265,35 @@ app
       type: type
     });
 
-    User.createUser(newUser, function (err, Request) {
+    User.createUser(newUser, function (err, p) {
 
       if (err) {
         console.log(err)
         return next(err);
-      } else
-        res.json({ Requests: Request })
+      } else{
+        if (p.type == "1") {
+          Book.getAllBooks(function (e, Books) {
+            if (e) {
+              e.status = 406; return next(e);
+            }
+            if (Books.length < 1) {
+              return res.status(404).json({ message: "Books not found" })
+            }
+            res.json({ Books: Books, User: p })
+          })
+        }
+        else if (p.type == "0") {
+          Request.getAllRequests(function (e, Books) {
+            if (e) {
+              e.status = 406; return next(e);
+            }
+            if (Books.length < 1) {
+              return res.status(404).json({ message: "Books not found" })
+            }
+            res.json({ Requests: Books, User: p })
+          })
+        }
+      }
     });
   })
   .get('/', (req, res) => res.send("in"))
